@@ -120,5 +120,59 @@ namespace sudoku
                 }
             }
         }
+
+        private void BtnRatkaise_Click(object sender, EventArgs e)
+        {
+            int[,] kiinteatNumerot = new int[9, 9]; // luetaan laudalta käyttäjän syöttämät numerot, eli nämä on "kiinteitä" joihin ei kosketa
+
+            for (int y = 0; y < 9; y++)
+            {
+                for (int x = 0; x < 9; x++)
+                {
+                    kiinteatNumerot[y, x] = Pelimoottori.haeNumero(y, x);
+                }
+            }
+
+            bool onnistuiko = false;
+            int yrityksia = 0;
+            /*
+            do
+            {
+                onnistuiko = Pelimoottori.RatkaisePeli(kiinteatNumerot);
+                if (!onnistuiko)
+                    Pelimoottori.Alusta();
+                yrityksia++;
+            } while (!onnistuiko);
+            Console.WriteLine(yrityksia);
+            */
+            Pelimoottori.RatkaisePeli(kiinteatNumerot);
+
+            int numero = 0;
+
+            for (int rivi = 0; rivi < 9; rivi++) // haetaan nappeihin arvot (numerot) pelimoottorista
+            {
+                for (int sarake = 0; sarake < 9; sarake++)
+                {
+                    napit[numero++].Text = Pelimoottori.haeNumero(rivi, sarake).ToString();
+                }
+            }
+
+        }
+
+        private void BtnTyhjenna_Click(object sender, EventArgs e)
+        {
+            Pelimoottori.Alusta();
+
+            int numero = 0;
+
+            for (int rivi = 0; rivi < 9; rivi++) // haetaan nappeihin arvot (numerot) pelimoottorista
+            {
+                for (int sarake = 0; sarake < 9; sarake++)
+                {
+                    napit[numero++].Text = "";
+                }
+            }
+
+        }
     }
 }

@@ -111,6 +111,8 @@
             this.button79 = new System.Windows.Forms.Button();
             this.button80 = new System.Windows.Forms.Button();
             this.BtnUusiPeli = new System.Windows.Forms.Button();
+            this.BtnRatkaise = new System.Windows.Forms.Button();
+            this.BtnTyhjenna = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -1201,7 +1203,7 @@
             // 
             // BtnUusiPeli
             // 
-            this.BtnUusiPeli.Location = new System.Drawing.Point(350, 600);
+            this.BtnUusiPeli.Location = new System.Drawing.Point(266, 599);
             this.BtnUusiPeli.Name = "BtnUusiPeli";
             this.BtnUusiPeli.Size = new System.Drawing.Size(75, 23);
             this.BtnUusiPeli.TabIndex = 3;
@@ -1209,11 +1211,33 @@
             this.BtnUusiPeli.UseVisualStyleBackColor = true;
             this.BtnUusiPeli.Click += new System.EventHandler(this.BtnUusiPeli_Click);
             // 
+            // BtnRatkaise
+            // 
+            this.BtnRatkaise.Location = new System.Drawing.Point(347, 599);
+            this.BtnRatkaise.Name = "BtnRatkaise";
+            this.BtnRatkaise.Size = new System.Drawing.Size(75, 23);
+            this.BtnRatkaise.TabIndex = 4;
+            this.BtnRatkaise.Text = "Ratkaise";
+            this.BtnRatkaise.UseVisualStyleBackColor = true;
+            this.BtnRatkaise.Click += new System.EventHandler(this.BtnRatkaise_Click);
+            // 
+            // BtnTyhjenna
+            // 
+            this.BtnTyhjenna.Location = new System.Drawing.Point(428, 599);
+            this.BtnTyhjenna.Name = "BtnTyhjenna";
+            this.BtnTyhjenna.Size = new System.Drawing.Size(75, 23);
+            this.BtnTyhjenna.TabIndex = 5;
+            this.BtnTyhjenna.Text = "Tyhjennä";
+            this.BtnTyhjenna.UseVisualStyleBackColor = true;
+            this.BtnTyhjenna.Click += new System.EventHandler(this.BtnTyhjenna_Click);
+            // 
             // FrmPelilauta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(781, 654);
+            this.Controls.Add(this.BtnTyhjenna);
+            this.Controls.Add(this.BtnRatkaise);
             this.Controls.Add(this.BtnUusiPeli);
             this.Controls.Add(this.tableLayoutPanel1);
             this.DoubleBuffered = true;
@@ -1311,6 +1335,8 @@
         private System.Windows.Forms.Button button79;
         private System.Windows.Forms.Button button80;
         private System.Windows.Forms.Button BtnUusiPeli;
+        private System.Windows.Forms.Button BtnRatkaise;
+        private System.Windows.Forms.Button BtnTyhjenna;
     }
 }
 
