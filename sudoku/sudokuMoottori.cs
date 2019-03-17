@@ -60,6 +60,7 @@ namespace sudoku
             testatutNumerot = new Pakka[9, 9];
             pikkuGrid = new Pakka[3, 3];
 
+            
             for (int y = 0; y < 3; y++)
             {
                 for (int x = 0; x < 3; x++)
@@ -129,7 +130,17 @@ namespace sudoku
         public bool RatkaisePeli(int[,] taulukko)
         {
             int[,] kiinteatNumerot = taulukko;// luetaan laudalta käyttäjän syöttämät numerot, eli nämä on "kiinteitä" joihin ei kosketa
-                        
+
+            testatutNumerot = new Pakka[9, 9];
+
+            for (int y = 0; y < 9; y++)
+            {
+                for (int x = 0; x < 9; x++)
+                {
+                    testatutNumerot[y, x] = new Pakka(rnd);
+                }
+            }
+
             bool liikuttuTaaksepain = false;
             int montakoAskeltaTaaksepain = 0;
 
@@ -138,7 +149,7 @@ namespace sudoku
             {
                 for (int sarake = 0; sarake < 9; sarake++)
                 {
-                    if (rivi == 1 && sarake == 0)
+                    if (rivi == 8 && sarake == 8)
                     {
 
                     }
@@ -158,6 +169,10 @@ namespace sudoku
                         }
                         sarake = edellinenSarake;
                         rivi = edellinenRivi;
+                        if (sarake < 0)
+                            sarake = 0;
+                        if (rivi < 0)
+                            rivi = 0;
                     }
 
                     if (kiinteatNumerot[rivi, sarake] > 0) // mikäli on käyttäjän asettama numero, ei tehdä mitään
@@ -523,9 +538,7 @@ namespace sudoku
                                     seuraavaY = rivi + 1;
                                 }
 
-                                // y = seuraavaY ja x = seuraavaX
-                                // HOX!
-
+                                
                                 for (int y = seuraavaY; y < 9; y++) // tyhjennetään yritykset
                                 {
                                     for (int x = seuraavaX; x < 9; x++)
