@@ -78,7 +78,11 @@ namespace sudoku
             for (int i = 0; i < _pakka.Count; i++)
             {
                 if (_pakka.ElementAt(i) == numero)
+                {
                     _pakka.RemoveAt(i);
+                    break;
+                }
+                    
             }
         }
 

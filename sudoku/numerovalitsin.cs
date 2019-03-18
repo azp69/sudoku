@@ -36,7 +36,8 @@ namespace sudoku
                 }
             }
 
-            
+            this.KeyPreview = true;
+
             int numero = int.Parse(this._nappi.Name.Remove(0, 6));
             int rivi = (numero / 9);
             int sarake = (numero - (numero / 9) * 9);
@@ -81,6 +82,39 @@ namespace sudoku
             this._moottori.SijoitaNumero(rivi, sarake, numero);
 
             this._nappi.Text = valittunumero.Text;
+            this.Close();
+        }
+
+        private void FrmNumerovalitsin_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar >= 49 && e.KeyChar <= 57)
+            {
+                int solu = int.Parse(this._nappi.Name.Remove(0, 6));
+
+                int numero = e.KeyChar - 48;
+
+                int rivi = (solu / 9);
+                int sarake = (solu - (solu / 9) * 9);
+
+                this._moottori.SijoitaNumero(rivi, sarake, numero);
+
+                this._nappi.Text = (e.KeyChar - 48).ToString();
+
+                e.Handled = true;
+                this.KeyPreview = false;
+                this.Close();
+            }
+            else
+            {
+                e.Handled = true;
+                this.KeyPreview = false;
+                this.Close();
+            }
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.KeyPreview = false;
             this.Close();
         }
     }

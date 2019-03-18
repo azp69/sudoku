@@ -174,5 +174,37 @@ namespace sudoku
             }
 
         }
+
+        private void btnTuoTiedostosta_Click(object sender, EventArgs e)
+        {
+            // tyhjennetään kenttä
+            BtnTyhjenna_Click(sender, e);
+
+            // luetaan tiedostosta
+            int[,] tiedostosta = CSVReader.LueTiedostosta();
+
+            if (tiedostosta == null)
+            {
+                MessageBox.Show("Ei voitu lukea tiedostoa");
+                return;
+            }
+
+            int numero = 0;
+
+            // sijoitetaan numerot pelimoottoriin ja
+            // haetaan nappeihin arvot (numerot) pelimoottorista
+            for (int rivi = 0; rivi < 9; rivi++) 
+            {
+                for (int sarake = 0; sarake < 9; sarake++)
+                {
+                    if (tiedostosta[rivi, sarake] != 0)
+                    {
+                        Pelimoottori.SijoitaNumero(rivi, sarake, tiedostosta[rivi, sarake]);
+                        napit[numero].Text = Pelimoottori.haeNumero(rivi, sarake).ToString();
+                    }
+                    numero++;
+                }
+            }
+        }
     }
 }

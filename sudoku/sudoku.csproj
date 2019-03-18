@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CSVReader.cs" />
     <Compile Include="pakka.cs" />
     <Compile Include="pelilauta.cs">
       <SubType>Form</SubType>
