@@ -145,7 +145,12 @@ namespace sudoku
             } while (!onnistuiko);
             Console.WriteLine(yrityksia);
             */
-            Pelimoottori.RatkaisePeli(kiinteatNumerot);
+
+
+            Pelimoottori.Ratkaisualgoritmi(kiinteatNumerot);
+
+
+            // Pelimoottori.RatkaisePeli(kiinteatNumerot);
 
             int numero = 0;
 

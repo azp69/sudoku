@@ -18,42 +18,10 @@ namespace sudoku
 
         public sudokuMoottori()
         {
-            // Alustetaan aputaulukot
-            rivit = new Pakka[9];
-            sarakkeet = new Pakka[9];
-            testatutNumerot = new Pakka[9, 9];
-            pikkuGrid = new Pakka[3, 3];
-
-            for (int y = 0; y < 3; y++)
-            {
-                for (int x = 0; x < 3; x++)
-                {
-                    pikkuGrid[y, x] = new Pakka(rnd);
-                    pikkuGrid[y, x].Alusta();
-                }
-            }
-
-            for (int y = 0; y < 9; y++)
-            {
-                for (int x = 0; x < 9; x++)
-                {
-                    testatutNumerot[y, x] = new Pakka(rnd);
-                }
-            }
-
-            for (int i = 0; i < 9; i++)
-            {
-                rivit[i] = new Pakka(rnd);
-                rivit[i].Alusta();
-                sarakkeet[i] = new Pakka(rnd);
-                sarakkeet[i].Alusta();
-            }
-
-            peliruudukko = new int[9, 9];
-
+            Alusta();
         }
 
-        public void Alusta() // testimetodi alustukseen
+        public void Alusta() 
         {
             rivit = new Pakka[9];
             sarakkeet = new Pakka[9];
@@ -125,6 +93,228 @@ namespace sudoku
 
         }
 
+        public void KayLapiYhdenVaihtoehdonPaikat(int[,] taulukko, bool ekaKierros, int nykyinenRivi, int nykyinenSarake)
+        {
+            if (nykyinenRivi > 8)
+                return;
+
+            int[,] kiinteatNumerot = taulukko;// luetaan laudalta käyttäjän syöttämät numerot, eli nämä on "kiinteitä" joihin ei kosketa
+
+            testatutNumerot = new Pakka[9, 9];
+
+            for (int y = 0; y < 9; y++)
+            {
+                for (int x = 0; x < 9; x++)
+                {
+                    testatutNumerot[y, x] = new Pakka(rnd);
+                }
+            }
+            
+            for (int rivi = nykyinenRivi; rivi < 9; rivi++)
+            {
+                for (int sarake = nykyinenSarake; sarake < 9; sarake++)
+                {
+
+                    if (kiinteatNumerot[rivi, sarake] > 0) // mikäli on käyttäjän asettama numero, ei tehdä mitään
+                    { continue; }
+
+                    int[] grid = LaskeGrid(rivi, sarake);
+
+                    int gy = grid[0];
+                    int gx = grid[1];
+
+                    Pakka vaihtoehdot = LaskeVaihtoehdot(sarakkeet[sarake], rivit[rivi], pikkuGrid[gy, gx]); // Haetaan mahdolliset vaihtoehdot
+
+                    if (vaihtoehdot != null) // Mikäli meillä on vaihtoehtoja
+                    {
+                        if (vaihtoehdot.NumeroidenMaara() == 1) // mikäli on vain 1 vaihtoehto
+                        {
+                            int arvottuNumero = vaihtoehdot.NostaJaPoistaSatunnainen();
+
+                            if (ekaKierros)
+                            {
+                                kiinteatNumerot[rivi, sarake] = arvottuNumero;
+                            }
+
+                            peliruudukko[rivi, sarake] = arvottuNumero; // Lisätään arvottu numero peliruudukkoon
+                            rivit[rivi].PoistaNumero(arvottuNumero); // poistetaan arvottu numero kyseisen rivin pelattavissa olevista numeroista
+                            sarakkeet[sarake].PoistaNumero(arvottuNumero); // ja sama sarakkeelle
+                            pikkuGrid[gy, gx].PoistaNumero(arvottuNumero); // ja vielä 3x3 gridille
+                        }
+                    }
+                }
+            }
+        }
+
+        public bool Ratkaisualgoritmi(int[,] taulukko)
+        {
+            KayLapiYhdenVaihtoehdonPaikat(taulukko, true, 0 , 0);
+            bool liikutaanTaaksepain = false;
+
+            for (int rivi = 0; rivi < 9; rivi++)
+            {
+                for (int sarake = 0; sarake < 9; sarake++)
+                {
+
+
+                    if ((OnkoKiinteaNumero(taulukko, rivi, sarake) && liikutaanTaaksepain == false))
+                        continue;
+
+                    else if ((OnkoKiinteaNumero(taulukko, rivi, sarake) && liikutaanTaaksepain))
+                    {
+                        int[] taaksePain = Liikutaaksepain(rivi, sarake);
+                        rivi = taaksePain[0];
+                        sarake = taaksePain[1];
+                        continue;
+                    }
+
+                    // jää ikilooppiin
+                    if (peliruudukko[rivi, sarake] > 0)
+                        continue;
+
+                    Pakka vaihtoehdot = OnkoVaihtoehtoja(rivi, sarake);
+
+                    if (vaihtoehdot != null)
+                    {
+                        SijoitaArvottuNumero(rivi,sarake,vaihtoehdot);
+                        int[] seuraavaSolu = LaskeSeuraavaSolu(rivi, sarake);
+                        KayLapiYhdenVaihtoehdonPaikat(taulukko, false, seuraavaSolu[0], seuraavaSolu[1]);
+                        liikutaanTaaksepain = false;
+                    }
+                    else
+                    {
+                        liikutaanTaaksepain = true;
+                        PoistaNumero(rivi, sarake);
+
+                        int[] taaksePain = Liikutaaksepain(rivi, sarake);
+                        rivi = taaksePain[0];
+                        sarake = taaksePain[1];
+                    }
+
+                }
+            }
+            return false; // HOX!!
+        }
+
+        public void PoistaNumero(int rivi, int sarake)
+        {
+            int[] gridi = LaskeGrid(rivi, sarake);
+            int gy = gridi[0];
+            int gx = gridi[1];
+
+            int edellinenNumero = peliruudukko[rivi, sarake]; // otetaan vanha numero talteen
+
+            peliruudukko[rivi, sarake] = 0; // poistetaan numero ruudukosta
+
+            // palautetaan numero takaisin riveille ja sarakkeille pelattavissa oleviin numeroihin
+            rivit[rivi].Lisaa(edellinenNumero);
+            sarakkeet[sarake].Lisaa(edellinenNumero);
+
+            pikkuGrid[gy, gx].Lisaa(edellinenNumero);
+
+            int[] seuraavaSolu = LaskeSeuraavaSolu(rivi, sarake);
+            int seuraavaY = seuraavaSolu[0];
+            int seuraavaX = seuraavaSolu[1];
+
+            for (int y = seuraavaY; y < 9; y++) // tyhjennetään yritykset
+            {
+                for (int x = seuraavaX; x < 9; x++)
+                {
+                    testatutNumerot[y, x].Tyhjenna();
+                }
+            }
+
+        }
+
+        public int[] LaskeSeuraavaSolu(int rivi, int sarake)
+        {
+            int[] arvot = new int[2];
+
+            if (sarake >= 8)
+            {
+                arvot[1] = 0;
+                arvot[0] = rivi + 1;
+            }
+            else
+                arvot[1] = sarake + 1;
+
+            return arvot;
+        }
+
+        public Pakka OnkoVaihtoehtoja(int rivi, int sarake)
+        {
+            int[] grid = LaskeGrid(rivi, sarake);
+            
+            Pakka vaihtoehdot = LaskeVaihtoehdot(sarakkeet[sarake], rivit[rivi], pikkuGrid[grid[0], grid[1]]); // Haetaan mahdolliset vaihtoehdot
+
+            for (int i = 0; i < testatutNumerot[rivi, sarake].NumeroidenMaara(); i++)
+            {
+                // poistetaan vaihtoehdoista jo koitetut numerot
+                vaihtoehdot.PoistaNumero(testatutNumerot[rivi, sarake].NostaNumeroPaikasta(i));
+            }
+
+            if (vaihtoehdot != null && vaihtoehdot.NumeroidenMaara() > 0)
+                return vaihtoehdot;
+            else
+                return null;
+        }
+
+        public bool OnkoKiinteaNumero(int[,] kiinteatNumerot, int rivi, int sarake)
+        {
+            if (kiinteatNumerot[rivi, sarake] > 0)
+                return true;
+            else
+                return false;
+        }
+
+        public int[] Liikutaaksepain(int rivi, int sarake)
+        {
+            int[] arvot = new int[2];
+            int edellinenRivi, edellinenSarake;
+            if (sarake > 1)
+            {
+                edellinenSarake = sarake - 2;
+                edellinenRivi = rivi;
+            }
+            else
+            {
+                edellinenSarake = 8;
+                edellinenRivi = rivi - 1;
+            }
+            sarake = edellinenSarake;
+            rivi = edellinenRivi;
+            if (sarake < 0)
+                sarake = 0;
+            if (rivi < 0)
+                rivi = 0;
+
+            arvot[0] = rivi;
+            arvot[1] = sarake;
+            return arvot;
+        }
+
+        public int[] LaskeGrid(int rivi, int sarake)
+        {
+            int[] arvot = new int[2];
+            arvot[0] = (int)(Math.Floor((decimal)(rivi) / 3)); // lasketaan missä 3x3 gridissä ollaan
+            arvot[1] = (int)Math.Floor((decimal)(sarake) / 3);
+            return arvot;
+        }
+
+        public int SijoitaArvottuNumero(int rivi, int sarake, Pakka vaihtoehdot)
+        {
+            int arvottuNumero = vaihtoehdot.NostaJaPoistaSatunnainen();
+            int[] grid = LaskeGrid(rivi, sarake);
+            int gy = grid[0];
+            int gx = grid[1];
+
+            peliruudukko[rivi, sarake] = arvottuNumero; // Lisätään arvottu numero peliruudukkoon
+            testatutNumerot[rivi, sarake].Lisaa(arvottuNumero); // Lisätään arvottu numero kyseisen solun testattuihin numeroihin
+            rivit[rivi].PoistaNumero(arvottuNumero); // poistetaan arvottu numero kyseisen rivin pelattavissa olevista numeroista
+            sarakkeet[sarake].PoistaNumero(arvottuNumero); // ja sama sarakkeelle
+            pikkuGrid[gy, gx].PoistaNumero(arvottuNumero); // ja vielä 3x3 gridille
+            return arvottuNumero;
+        }
 
         #region Pelin ratkaisualgoritmi
         public bool RatkaisePeli(int[,] taulukko)
@@ -144,15 +334,30 @@ namespace sudoku
             bool liikuttuTaaksepain = false;
             int montakoAskeltaTaaksepain = 0;
 
+            int riviMax = 0;
+            int sarakeMax = 0;
 
             for (int rivi = 0; rivi < 9; rivi++)
             {
                 for (int sarake = 0; sarake < 9; sarake++)
                 {
-                    if (rivi == 8 && sarake == 8)
+                    if (rivi == 7)
                     {
 
                     }
+
+                    if (rivi >= riviMax)
+                    {
+                        riviMax = rivi;
+                        sarakeMax = 0;
+
+                        if (sarake > sarakeMax)
+                            sarakeMax = sarake;
+                    }
+
+                    
+
+                    
 
                     if (liikuttuTaaksepain) // mikäli ollaan edellisellä kierroksella liikuttu taaksepäin
                     {
@@ -174,6 +379,12 @@ namespace sudoku
                         if (rivi < 0)
                             rivi = 0;
                     }
+
+                    bool kiinteaNumero;
+                    if (kiinteatNumerot[rivi, sarake] > 0)
+                        kiinteaNumero = true;
+                    else
+                        kiinteaNumero = false;
 
                     if (kiinteatNumerot[rivi, sarake] > 0) // mikäli on käyttäjän asettama numero, ei tehdä mitään
                     {
@@ -233,6 +444,23 @@ namespace sudoku
                     {
                         bool liikutaanTaaksepain = false; // liikutaanko taaksepäin, oletetaan että ei
 
+
+                        // poista numero tästä solusta, kun ei ole vaihtoehtoja, eikä käyttäjän syöttämä solu ja ollaan liikuttu taaksepäin
+
+                        int edellinenNumero = peliruudukko[rivi, sarake]; // otetaan vanha numero talteen
+
+                        peliruudukko[rivi, sarake] = 0; // poistetaan numero ruudukosta
+
+                        // palautetaan numero takaisin riveille ja sarakkeille pelattavissa oleviin numeroihin
+                        rivit[rivi].Lisaa(edellinenNumero);
+                        sarakkeet[sarake].Lisaa(edellinenNumero);
+
+                        gy = (int)(Math.Floor((decimal)(rivi) / 3)); // lasketaan missä 3x3 gridissä ollaan
+                        gx = (int)Math.Floor((decimal)(sarake) / 3);
+
+                        pikkuGrid[gy, gx].Lisaa(edellinenNumero); // palautetaan numero myös 3x3 gridille
+
+
                         do
                         {
                             if (rivi == 1 && sarake == 0)
@@ -242,7 +470,7 @@ namespace sudoku
 
                             int edellinenRivi, edellinenSarake;
 
-
+                            //
                             if (sarake > 0)
                             {
                                 edellinenSarake = sarake - 1;
@@ -258,7 +486,7 @@ namespace sudoku
                             rivi = edellinenRivi;
                             sarake = edellinenSarake;
                             liikuttuTaaksepain = false;
-
+                            ///
 
                             if (rivi < 0)
                             {
@@ -271,7 +499,7 @@ namespace sudoku
 
                             //Console.WriteLine("Ei mahdollisia siirtoja, palataan taaksepäin soluun: rivi: " + rivi + " solu: " + sarake);
 
-                            int edellinenNumero = peliruudukko[rivi, sarake]; // otetaan vanha numero talteen
+                            edellinenNumero = peliruudukko[rivi, sarake]; // otetaan vanha numero talteen
 
                             peliruudukko[rivi, sarake] = 0; // poistetaan numero ruudukosta
 
