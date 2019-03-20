@@ -12,6 +12,13 @@ namespace sudoku
 {
     public partial class FrmNumerovalitsin : Form
     {
+        enum Ruudukko
+        {
+            Peliruudukko,
+            KiinteatNumerot,
+            VarmatNumerot,
+        }
+
         public Button _nappi;
         public sudokuMoottori _moottori;
         public List<Button> napit = new List<Button>();
@@ -79,7 +86,7 @@ namespace sudoku
             int rivi = (solu / 9);
             int sarake = (solu - (solu / 9) * 9);
 
-            this._moottori.SijoitaNumero(rivi, sarake, numero);
+            this._moottori.SijoitaNumero((int)Ruudukko.KiinteatNumerot, rivi, sarake, numero);
 
             this._nappi.Text = valittunumero.Text;
             this.Close();
@@ -96,7 +103,7 @@ namespace sudoku
                 int rivi = (solu / 9);
                 int sarake = (solu - (solu / 9) * 9);
 
-                this._moottori.SijoitaNumero(rivi, sarake, numero);
+                this._moottori.SijoitaNumero((int)Ruudukko.KiinteatNumerot, rivi, sarake, numero);
 
                 this._nappi.Text = (e.KeyChar - 48).ToString();
 

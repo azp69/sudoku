@@ -12,6 +12,13 @@ namespace sudoku
 {
     public partial class FrmPelilauta : Form
     {
+        enum Ruudukko
+        {
+            Peliruudukko,
+            KiinteatNumerot,
+            VarmatNumerot,
+        }
+
         sudokuMoottori Pelimoottori;
         public List<Button> napit = new List<Button>();
 
@@ -116,7 +123,7 @@ namespace sudoku
             {
                 for (int sarake = 0; sarake < 9; sarake++)
                 {
-                    napit[numero++].Text = Pelimoottori.haeNumero(rivi, sarake).ToString();
+                    napit[numero++].Text = Pelimoottori.haeNumero((int)Ruudukko.Peliruudukko, rivi, sarake).ToString();
                 }
             }
         }
@@ -129,7 +136,7 @@ namespace sudoku
             {
                 for (int x = 0; x < 9; x++)
                 {
-                    kiinteatNumerot[y, x] = Pelimoottori.haeNumero(y, x);
+                    kiinteatNumerot[y, x] = Pelimoottori.haeNumero((int)Ruudukko.Peliruudukko, y, x);
                 }
             }
 
@@ -146,7 +153,7 @@ namespace sudoku
             */
 
 
-            Pelimoottori.Ratkaisualgoritmi(kiinteatNumerot);
+            Pelimoottori.Ratkaisualgoritmi();
 
 
             // Pelimoottori.RatkaisePeli(kiinteatNumerot);
@@ -157,7 +164,11 @@ namespace sudoku
             {
                 for (int sarake = 0; sarake < 9; sarake++)
                 {
-                    napit[numero++].Text = Pelimoottori.haeNumero(rivi, sarake).ToString();
+                    napit[numero].Text = Pelimoottori.haeNumero((int)Ruudukko.Peliruudukko, rivi, sarake).ToString();
+                    if (Pelimoottori.haeNumero((int)Ruudukko.KiinteatNumerot, rivi, sarake) != 0)
+                        napit[numero].Text = Pelimoottori.haeNumero((int)Ruudukko.KiinteatNumerot, rivi, sarake).ToString();
+
+                    numero++;
                 }
             }
 
@@ -203,8 +214,8 @@ namespace sudoku
                 {
                     if (tiedostosta[rivi, sarake] != 0)
                     {
-                        Pelimoottori.SijoitaNumero(rivi, sarake, tiedostosta[rivi, sarake]);
-                        napit[numero].Text = Pelimoottori.haeNumero(rivi, sarake).ToString();
+                        Pelimoottori.SijoitaNumero((int)Ruudukko.KiinteatNumerot, rivi, sarake, tiedostosta[rivi, sarake]);
+                        napit[numero].Text = Pelimoottori.haeNumero((int)Ruudukko.KiinteatNumerot, rivi, sarake).ToString();
                     }
                     numero++;
                 }
