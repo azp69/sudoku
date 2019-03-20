@@ -133,8 +133,7 @@ namespace sudoku
                 }
             }
 
-            bool onnistuiko = false;
-            int yrityksia = 0;
+            
             /*
             do
             {
