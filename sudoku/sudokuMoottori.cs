@@ -69,7 +69,22 @@ namespace sudoku
             }
         }
 
+        public void RatkaisunAlustus()
+        {
 
+            this.testatutNumerot = new Pakka[9, 9];
+
+            this.rivi = 0;
+            this.sarake = 0;
+
+            for (int y = 0; y < 9; y++)
+            {
+                for (int x = 0; x < 9; x++)
+                {
+                    testatutNumerot[y, x] = new Pakka(rnd);
+                }
+            }
+        }
 
 
         // 2.0
@@ -151,25 +166,37 @@ namespace sudoku
 
         public bool Ratkaisualgoritmi(int[,] esisyotetytNumerot)
         {
-            KayLapiYhdenVaihtoehdonPaikat(esisyotetytNumerot, true, 0, 0);
+            // KayLapiYhdenVaihtoehdonPaikat(esisyotetytNumerot, true, 0, 0);
             bool liikuttiinTaaksepain = false;
-            bool ratkaistaan = true;
+            bool yritetaanRatkaista = true;
 
-            this.rivi = 0;
-            this.sarake = 0;
+            RatkaisunAlustus();
 
             do
             {
 
                 if ((OnkoKiinteaNumero(esisyotetytNumerot) && liikuttiinTaaksepain == true))
                 {
-                    SiirryEdelliseenSoluun();
+                    yritetaanRatkaista = SiirryEdelliseenSoluun();
+
+                    if (yritetaanRatkaista == false)
+                        return false;
+
+                    if (OnkoKiinteaNumero(esisyotetytNumerot) == false)
+                        PoistaNumero();
+
+                    PoistaYritykset();
+
                     continue;
                 }
                     
                 else if ((OnkoKiinteaNumero(esisyotetytNumerot) && liikuttiinTaaksepain == false))
                 {
-                    SiirrySeuraavaanSoluun();
+                    yritetaanRatkaista = SiirrySeuraavaanSoluun();
+
+                    if (yritetaanRatkaista == false)
+                        return false;
+
                     continue;
                 }
                 
@@ -178,8 +205,8 @@ namespace sudoku
 
                 if (onnistunutSiirto == true)
                 {
-                    ratkaistaan = SiirrySeuraavaanSoluun();
-                    if (ratkaistaan == false)
+                    yritetaanRatkaista = SiirrySeuraavaanSoluun();
+                    if (yritetaanRatkaista == false)
                         return true;
 
                     liikuttiinTaaksepain = false;
@@ -187,24 +214,21 @@ namespace sudoku
                 else
                 {
 
-                    ratkaistaan = SiirryEdelliseenSoluun();
+                    yritetaanRatkaista = SiirryEdelliseenSoluun();
 
-                    if (ratkaistaan == false)
+                    if (yritetaanRatkaista == false) // ollaan päädytty tilanteeseen, jossa kaikki ratkaisut on yritetty, eikä voida liikkua enää taaksepäin
                         return false;
 
                     if (OnkoKiinteaNumero(esisyotetytNumerot) == false)
                         PoistaNumero();
 
+                    PoistaYritykset();
+
                     liikuttiinTaaksepain = true;
-                }
-
-                if (this.rivi == 0 && this.sarake == 8)
-                {
-
                 }
                     
                 
-            } while (ratkaistaan);
+            } while (yritetaanRatkaista);
 
             return false; // HOX!!
         }
@@ -225,6 +249,20 @@ namespace sudoku
 
         }
 
+        public void PoistaYritykset()
+        {
+            int[] seuraavasolu = LaskeSeuraavaSolu();
+
+
+            for (int y = seuraavasolu[0]; y < 9; y++) // tyhjennetään yritykset
+            {
+                for (int x = seuraavasolu[1]; x < 9; x++)
+                {
+                    testatutNumerot[y, x].Tyhjenna();
+                }
+            }
+        }
+
         public void PoistaNumero()
         {
             int[] gridi = LaskeGrid();
@@ -241,16 +279,31 @@ namespace sudoku
             this.sarakkeet[this.sarake].Lisaa(edellinenNumero);
 
             pikkuGrid[gy, gx].Lisaa(edellinenNumero);
-            int[] seuraavasolu = LaskeSeuraavaSolu();
 
+        }
 
-            for (int y = seuraavasolu[0]; y < 9; y++) // tyhjennetään yritykset
+        public bool SiirryEdelliseenSoluun()
+        {
+
+            int edellinenRivi, edellinenSarake;
+            if (this.sarake > 0)
             {
-                for (int x = seuraavasolu[1]; x < 9; x++)
-                {
-                    testatutNumerot[y, x].Tyhjenna();
-                }
+                edellinenSarake = this.sarake - 1;
+                edellinenRivi = this.rivi;
             }
+            else
+            {
+                edellinenSarake = 8;
+                edellinenRivi = rivi - 1;
+            }
+
+            this.sarake = edellinenSarake;
+            this.rivi = edellinenRivi;
+
+            if (this.rivi < 0)
+                return false;
+            else
+                return true;
 
         }
 
@@ -286,7 +339,7 @@ namespace sudoku
         public Pakka OnkoVaihtoehtoja()
         {
             int[] grid = LaskeGrid();
-
+            // onko rivit ja sarakkeet väärinpäin!
             Pakka vaihtoehdot = LaskeVaihtoehdot(this.sarakkeet[this.sarake], this.rivit[rivi], this.pikkuGrid[grid[0], grid[1]]); // Haetaan mahdolliset vaihtoehdot
             if (vaihtoehdot == null)
                 return null;
@@ -311,30 +364,7 @@ namespace sudoku
                 return false;
         }
 
-        public bool SiirryEdelliseenSoluun()
-        {
-
-            int edellinenRivi, edellinenSarake;
-            if (this.sarake > 0)
-            {
-                edellinenSarake = this.sarake - 1;
-                edellinenRivi = this.rivi;
-            }
-            else
-            {
-                edellinenSarake = 8;
-                edellinenRivi = rivi - 1;
-            }
-
-            this.sarake = edellinenSarake;
-            this.rivi = edellinenRivi;
-
-            if (this.rivi < 0)
-                return false;
-            else
-                return true;
-
-        }
+        
 
         public int[] LaskeGrid()
         {
@@ -904,16 +934,20 @@ namespace sudoku
         public void PoistaSolu(int rivi, int sarake)
         {
             int edellinenNumero = peliruudukko[rivi, sarake];
-            peliruudukko[rivi, sarake] = 0; // poistetaan numero ruudukosta
 
-            // palautetaan numero takaisin riveille ja sarakkeille pelattavissa oleviin numeroihin
-            rivit[rivi].Lisaa(edellinenNumero);
-            sarakkeet[sarake].Lisaa(edellinenNumero);
+            if (edellinenNumero != 0)
+            {
+                peliruudukko[rivi, sarake] = 0; // poistetaan numero ruudukosta
 
-            int gy = (int)(Math.Floor((decimal)(rivi) / 3)); // lasketaan missä 3x3 gridissä ollaan
-            int gx = (int)Math.Floor((decimal)(sarake) / 3);
+                // palautetaan numero takaisin riveille ja sarakkeille pelattavissa oleviin numeroihin
+                rivit[rivi].Lisaa(edellinenNumero);
+                sarakkeet[sarake].Lisaa(edellinenNumero);
 
-            pikkuGrid[gy, gx].Lisaa(edellinenNumero); // palautetaan numero myös 3x3 gridille
+                int gy = (int)(Math.Floor((decimal)(rivi) / 3)); // lasketaan missä 3x3 gridissä ollaan
+                int gx = (int)Math.Floor((decimal)(sarake) / 3);
+
+                pikkuGrid[gy, gx].Lisaa(edellinenNumero); // palautetaan numero myös 3x3 gridille
+            }
         }
 
         #endregion
